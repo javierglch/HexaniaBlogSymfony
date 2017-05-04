@@ -1,0 +1,45 @@
+/* 
+    Created on : 04-may-2017, 10:48:28
+    Author     : Javier
+*/
+
+body {
+    background: #f8f8f8;
+    font-size:14px;   
+    color:#2a2a2a;
+}
+
+footer > .row:nth-child(1) > * {
+    line-height: 42px;
+}
+footer > .row:nth-child(1) {
+    height: 42px;
+}
+
+/* social icons */
+.social-icon {
+    background-image: url('../img/social-icons/sprite.png');
+    background-repeat: no-repeat;
+    display:inline-block;
+}
+.social-icon.sm.twitter{
+    background-position-x: calc(-42px*8);
+}
+.social-icon.sm.facebook{
+    background-position-x: calc(-42px*0);
+}
+.social-icon.sm.youtube{
+    background-position-x: calc(-42px*10);
+}
+.social-icon.sm:hover{
+    background-position-y: calc(-42px*1);
+}
+.social-icon.sm:focus,.social-icon.sm:active{
+    background-position-y: calc(-42px*2);
+}
+.social-icon.sm{
+    background-position-y: calc(-42px*0);
+    width:42px;
+    height:42px;
+    background-size: auto calc(42px*3);
+}

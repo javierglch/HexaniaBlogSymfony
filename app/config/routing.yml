@@ -1,0 +1,15 @@
+app:
+    resource: '@AppBundle/Controller/'
+    type:     annotation
+    
+#blog_home:
+#    path:     /
+#    defaults: { _controller: AppBundle:Default:index }
+#    
+#blog_list:
+#    path:     /algo
+#    defaults: { _controller: AppBundle:Default:algo }
+#    
+#blog_show:
+#    path:     /show
+#    defaults: { _controller: AppBundle:Default:show }
