@@ -49,7 +49,7 @@ class StartController extends Controller {
         $stmt = $em->getConnection()->prepare($sql);
         $stmt->execute();
         $rs = $stmt->fetchAll();
-        return $this->render('index.html.twig', ['var' => 'hola mundo!','rs'=>$rs]);
+        return $this->render('index.html.twig', ['var' => 'hola mundo!']);
     }
 
 }
