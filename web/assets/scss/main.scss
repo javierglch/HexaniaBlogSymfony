@@ -9,8 +9,60 @@ body {
     color:#2a2a2a;
 }
 
+/* placehodler */
+.form-control::-webkit-input-placeholder { color:#BCBCBC; }
+.form-control::-moz-placeholder { color:#BCBCBC; } /* firefox 19+ */
+.form-control:-ms-input-placeholder { color:#BCBCBC; } /* ie */
+.form-control:-moz-placeholder { color:#BCBCBC; }
+
+/*navbar*/
+
+.mainnavbar{
+    background: transparent;
+    font-size:15px;
+    height:42px;
+}
+.mainnavbar .navbar-brand{
+    height:100%;
+    padding:0;
+    margin:0;
+    font-size:0;
+}
+.mainnavbar img.logo{
+    height:100%;
+}
+.mainnavbar button{
+    cursor:pointer;
+}
+.mainnavbar #global-nav-search{
+    margin-top:5px;
+}
+.mainnavbar .form-control{
+    padding: 5px 27px 6px 12px;
+    height: 32px;
+    font-size: 12px;
+    line-height: 16px;
+    background-color: #f5f8fa;
+    border: 1px solid #e6ecf0;
+    border-right: none;
+    border-radius: 21px;
+    transition: all .2s ease-in-out;
+}
+
+.mainnavbar .input-group-addon{
+    width: 26px;
+    height: 32px;
+    border-bottom-right-radius: 21px;
+    border-top-right-radius: 21px;
+    cursor: pointer;
+    padding:0;
+    border: 1px solid #e6ecf0;
+    border-left: none;
+    background-color: #f5f8fa;
+}
 
 
+/* footer */
 .main-footer{
     bottom: 0;
     width: 100%;
@@ -37,7 +89,6 @@ body {
 }
 
 .main-footer .row:nth-child(1) {
-    height: 52px;
     margin-bottom: 5px;
     padding-bottom: 5px;
     padding-top: 5px;
