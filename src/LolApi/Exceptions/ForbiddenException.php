@@ -8,5 +8,5 @@
 
 namespace LolApi\Exceptions;
 
-class ForbiddenException extends \Exception{
+class ForbiddenException extends LolApiGeneralException{
 }

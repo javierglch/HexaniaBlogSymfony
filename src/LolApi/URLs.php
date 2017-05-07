@@ -16,15 +16,33 @@ namespace LolApi;
 class URLs {
 
     // ~ Resources URLS ~ 
-    const R_URL_CHAMPION = "https://{region}.api.pvp.net/api/lol/{region}/v1.2/champion";
-    const R_URL_CHAMPION_ID = "https://{region}.api.pvp.net/api/lol/{region}/v1.2/champion/{id}";
-    const R_URL_CHAMPION_MASTERY_CHAMP_ID = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/champion/{championId}";
-    const R_URL_CHAMPION_MASTERY_LIST = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/champions";
-    const R_URL_CHAMPION_MASTERY_SCORE = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/score";
-    const R_URL_CHAMPION_MASTERY_TOP = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/topchampions";
-    const R_URL_CURRENT_GAME = "https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/{platformId}/{summonerId}";
-    const R_URL_FEATURED_GAMES = "https://{region}.api.pvp.net/observer-mode/rest/featured";
-    const R_URL_RECENT_GAMES = "https://{region}.api.pvp.net/api/lol/{region}/v1.3/game/by-summoner/{summonerId}/recent";
+    const R_URL_CHAMPION = "https://{region}.api.pvp.net/api/lol/{region}/v1.2/champion"; //deprecated
+    const R_URL_CHAMPION_ID = "https://{region}.api.pvp.net/api/lol/{region}/v1.2/champion/{id}"; //deprecated
+    
+    const R_URL_CHAMPION_v3 = "https://{platformId}.api.riotgames.com/lol/platform/v3/champions";
+    const R_URL_CHAMPION_ID_v3 = "https://{platformId}.api.riotgames.com/lol/platform/v3/champions/{id}";
+    
+    const R_URL_CHAMPION_MASTERY_CHAMP_ID = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/champion/{championId}"; //deprecated
+    const R_URL_CHAMPION_MASTERY_LIST = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/champions"; //deprecated
+    const R_URL_CHAMPION_MASTERY_SCORE = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/score"; //deprecated
+    const R_URL_CHAMPION_MASTERY_TOP = "https://{region}.api.pvp.net/championmastery/location/{platformId}/player/{playerId}/topchampions"; //deprecated
+    
+    const R_URL_CHAMPION_MASTERY_CHAMP_ID_v3 = "https://{platformId}.api.riotgames.com/lol/champion-mastery/v3/champion-masteries/by-summoner/{summonerId}/by-champion/{championId}";
+    const R_URL_CHAMPION_MASTERY_LIST_v3 = "https://{platformId}.api.riotgames.com/lol/champion-mastery/v3/champion-masteries/by-summoner/{summonerId}";
+    const R_URL_CHAMPION_MASTERY_SCORE_v3 = "https://{platformId}.api.riotgames.com/lol/champion-mastery/v3/scores/by-summoner/{summonerId}";
+    
+    const R_URL_CURRENT_GAME = "https://{region}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/{platformId}/{summonerId}"; //deprecated
+    
+    const R_URL_CURRENT_GAME_v3 = "https://{platformId}.api.riotgames.com/lol/spectator/v3/active-games/by-summoner/{summonerId}";
+    
+    const R_URL_FEATURED_GAMES = "https://{region}.api.pvp.net/observer-mode/rest/featured"; //deprecated
+    
+    const R_URL_FEATURED_GAMES_v3 = "https://{platformId}.api.riotgames.com/lol/spectator/v3/featured-games"; 
+    
+    const R_URL_RECENT_GAMES = "https://{region}.api.pvp.net/api/lol/{region}/v1.3/game/by-summoner/{summonerId}/recent"; //deprecated
+    
+    //VOY POR AKI
+    
     const R_URL_LEAGUES_BY_SUMMONERS = "https://{region}.api.pvp.net/api/lol/{region}/v2.5/league/by-summoner/{summonerIds}";
     const R_URL_LEAGUES_BY_SUMMONERS_ENTRY = "https://{region}.api.pvp.net/api/lol/{region}/v2.5/league/by-summoner/{summonerIds}/entry";
     const R_URL_LEAGUES_BY_TEAMS = "https://{region}.api.pvp.net/api/lol/{region}/v2.5/league/by-team/{teamIds}";

@@ -8,6 +8,6 @@
 
 namespace LolApi\Exceptions;
 
-class BadRequestException extends \Exception{
+class BadRequestException extends LolApiGeneralException{
 
 }

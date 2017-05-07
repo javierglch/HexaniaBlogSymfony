@@ -8,4 +8,4 @@
 
 namespace LolApi\Exceptions;
 
-class NotImplementedException extends \Exception{}
+class NotImplementedException extends LolApiGeneralException{}

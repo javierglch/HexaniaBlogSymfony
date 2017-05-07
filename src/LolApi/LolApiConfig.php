@@ -48,7 +48,7 @@ class LolApiConfig {
     public $api_key_production = 'd87b8bad-cc2c-47b5-9f43-cbcffe78c00b';
 
     /** @var string */
-    public $api_key_development = 'RGAPI-de13121c-3a84-4793-b171-7af8eb232711';
+    public $api_key_development = 'RGAPI-210c941a-7b80-4b10-887e-84cc0b8068ec';
 
     /** @var string */
     public $current_season = 'SEASON2017';
@@ -102,7 +102,7 @@ class LolApiConfig {
      */
     public function getPlatformId($region) {
         if (!isset($this->platforms[strtoupper($region)])) {
-            throw new Exceptions('LolApiConfigException - GetPLatformId: Region ' . $region . ' desconocida o no configurada.');
+            throw new \Exceptions('LolApiConfigException - GetPLatformId: Region ' . $region . ' desconocida o no configurada.');
         }
         return $this->platforms[strtoupper($region)];
     }
@@ -132,6 +132,10 @@ class LolApiConfig {
     public function getSpectatorData($platformId) {
         $platformId = strtoupper($platformId);
         return isset($this->spectator[$platformId]) ? $this->spectator[$platformId] : null;
+    }
+
+    public function __toString() {
+        return 'LolApiConfig';
     }
 
 }

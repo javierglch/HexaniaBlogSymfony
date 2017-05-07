@@ -7,4 +7,4 @@
 
 namespace LolApi\Exceptions;
 
-class PaymentRequiredException extends \Exception{}
+class PaymentRequiredException extends LolApiGeneralException{}

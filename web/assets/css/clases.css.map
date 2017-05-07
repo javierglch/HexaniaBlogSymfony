@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAMA,wCAAyC,CAAE,KAAK,CAAC,OAAO,CACxD,+BAAgC,CAAE,KAAK,CAAC,OAAO,CAC/C,mCAAoC,CAAE,KAAK,CAAC,OAAO,CACnD,8BAA+B,CAAE,KAAK,CAAC,OAAO,CAE9C,aAAa,CACT,UAAU,CAAC,eAAe",
+"sources": ["../scss/clases.scss"],
+"names": [],
+"file": "clases.css"
+}

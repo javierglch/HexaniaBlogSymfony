@@ -8,5 +8,5 @@
 
 namespace LolApi\Exceptions;
 
-class RateLimitExceededException extends \Exception{
+class RateLimitExceededException extends LolApiGeneralException{
 }

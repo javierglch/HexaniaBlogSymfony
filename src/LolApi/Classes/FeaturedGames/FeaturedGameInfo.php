@@ -1,5 +1,7 @@
 <?php
 
+namespace LolApi\Classes\FeaturedGames;
+
 /**
  * FeaturedGameInfo
  *
@@ -102,8 +104,8 @@ class FeaturedGameInfo {
         $this->mapId = $data->mapId;
         $this->observers = new Observer($data->observers);
         $this->participants = [];
-        foreach ($data->participants as $oCurrentGameParticipant) {
-            $this->participants[] = new CurrentGameParticipant($oCurrentGameParticipant);
+        foreach ($data->participants as $oParticipant) {
+            $this->participants[] = new Participant($oParticipant);
         }
         $this->platformId = $data->platformId;
     }

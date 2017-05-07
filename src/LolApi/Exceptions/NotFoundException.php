@@ -8,5 +8,5 @@
 
 namespace LolApi\Exceptions;
 
-class NotFoundException extends \Exception{
+class NotFoundException extends LolApiGeneralException{
 }

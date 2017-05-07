@@ -16,26 +16,40 @@
         <link href="{{ asset('assets/css/main.css') }}" rel="stylesheet" type="text/css"/>
     </head>
     <body>
-        <header>
+        <header class="main-header">
             <nav class="mainnavbar navbar navbar-toggleable-md container">
                 <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarItems" aria-controls="navbarItems" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <a class="navbar-brand" href="#"><img class="logo" src="{{asset('assets/img/logo/logo-min.png')}}"></a>
                 <div class="collapse navbar-collapse" id="navbarItems">
-                    <ul class="navbar-nav mr-auto"></ul>
-                    <ul class="navbar-nav mr-auto">
+                    <ul class="navbar-nav mx-auto">
                         <li class="nav-item active">
                             <a class="nav-link" href="{{path('start_index')}}"><i class="fa fa-home"></i>&nbsp;{% trans %}Home{% endtrans %}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{path('start_index')}}"><i class="fa fa-home"></i>&nbsp;{% trans %}DuoQ{% endtrans %}</a>
+                            <a class="nav-link" href="{{path('duoq_index')}}"><i class="fa fa-user"></i>&nbsp;{% trans %}DuoQ{% endtrans %}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#"><i class="fa fa-home"></i>&nbsp;{% trans %}FlexQ{% endtrans %}</a>
+                            <a class="nav-link" href="{{path('flexq_index')}}"><i class="fa fa-users"></i>&nbsp;{% trans %}FlexQ{% endtrans %}</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {% trans %}Analisis{% endtrans %}
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                <a class="dropdown-item" href="{{path('current_game_analisis_index')}}">{% trans %}Current Game{% endtrans %}</a>
+                                <a class="dropdown-item" href="{{path('current_game_analisis_index_v2')}}">{% trans %}Current Game{% endtrans %} v2</a>
+                                <a class="dropdown-item" href="#">{% trans %}Match List{% endtrans %}</a>
+                                <a class="dropdown-item" href="#">{% trans %}DuoQ Performance{% endtrans %}</a>
+                            </div>
                         </li>
                     </ul>
-                    <ul class="navbar-nav my-2 my-lg-0">
+                    <ul class="navbar-nav mx-auto hidden-md-down">
+                        <li class="nav-item">
+                            <a class="navbar-brand" href="#"><img class="logo" src="{{asset('assets/img/logo/favicon.png')}}" alt="logo" title="League of Hexania"></a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav mx-auto">
                         <li class="nav-item">
                             <form class="form-inline" id="global-nav-search">
                                 <div class="input-group">
@@ -46,11 +60,11 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                {%trans%}Idioma{%endtrans%}
+                                <i class="fa fa-globe"></i>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <a class="dropdown-item" href="{{path('start_set_locale',{'locale':'en'})}}">English</a>
-                                <a class="dropdown-item" href="{{path('start_set_locale',{'locale':'es_ES'})}}">Español</a>
+                                <a class="dropdown-item" href="{{path('start_set_locale',{'locale':'en'})}}?route_name={{app.request.attributes.get('_route')}}">English</a>
+                                <a class="dropdown-item" href="{{path('start_set_locale',{'locale':'es_ES'})}}?route_name={{app.request.attributes.get('_route')}}">Español</a>
                             </div>
                         </li>
                         <li class="nav-item">
@@ -60,7 +74,7 @@
                 </div>
             </nav>
         </header>
-        <main>
+        <main class="main-content container-fluid">
             {% block main_content %} - contenido principal -{% endblock %}
         </main>
         <footer class="footer-margin-fix"></footer>

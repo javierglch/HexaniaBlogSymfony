@@ -7,4 +7,4 @@
 
 namespace LolApi\Exceptions;
 
-class UnauthorizedException extends \Exception{}
+class UnauthorizedException extends LolApiGeneralException{}

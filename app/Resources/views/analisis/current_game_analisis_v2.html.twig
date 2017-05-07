@@ -1,0 +1,340 @@
+{% extends "layout.twig" %}
+
+{% block main_content %}
+
+    <div class="container">
+        <div class="card card-block">
+            <h4 class="card-title">{%trans%}Current Game Analysis{%endtrans%}</h4>
+            <form id="SearchSummonerForm" class="form form-inline mx-auto" action="{{path('current_game_analisis_index')}}" method="GET">
+                <select name="region" class="form-control  mb-2 mr-sm-2 mb-sm-0">
+                    <option value="euw" selected="selected">EUW</option>
+                </select>
+                <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" name="summoner_name" placeholder="Summoner name..." value="{{invocador_buscado?invocador_buscado}}">
+
+                <div class="form-check mb-2 mr-sm-2 mb-sm-0">
+                    <label class="form-check-label">
+                        <input class="form-check-input" name="force_get_cache" type="checkbox" value="1"> Force get cache
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <div class="error-msg"></div>
+            <div class="progress-msg" id="Loading"></div>
+            <div class="analysis-result"></div>
+        </div>
+    </div>
+    <style type="text/css">
+        .champion_square{
+            height:35px;
+        }
+        .gameresult {
+            width:35px;
+            height:35px;
+            display:inline-block;
+        }
+        .gameresult.L{
+            background-color: red;
+        }
+        .gameresult.W{
+            background-color: green;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#SearchSummonerForm').on('submit', function (e) {
+                e.preventDefault();
+                startAnalisis();
+                return false;
+            });
+        });
+
+
+        /**
+         * 
+         * @param {string} region
+         * @param {string} method
+         * @param {array} methodParams
+         * @param {boolean} force_get_cache
+         * @returns {json}
+         */
+        function lolapicall(region, method, methodParams, force_get_cache) {
+            var response = {};
+            $.ajax({
+                url: '/lolapi/',
+                data: {
+                    method: method,
+                    region: region,
+                    methodParams: methodParams,
+                    force_get_cache: force_get_cache?1:0
+                },
+                dataType: 'json',
+                async: false, //peticion sincronica,
+                success: function (data, textStatus, jqXHR) {
+                    response = data;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    response = jqXHR.responseJSON;
+                },
+                crossDomain: true,
+                timeout: 0,
+                method: 'POST'
+            });
+
+            if (response.exception) {
+                throw new Error(method + ' - ' + response.exception.message);
+            }
+
+            return response;
+        }
+
+
+
+
+        function startAnalisis() {
+
+            $('.progress-msg').html('<p></p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>')
+
+            var summonerName = $('#SearchSummonerForm input[name="summoner_name"]').val();
+            var region = $('#SearchSummonerForm select[name="region"]').val();
+            var forceGetCache = $('#SearchSummonerForm input[name="force_get_cache"]').prop('checked');
+
+            //inicializaciones
+            setProgressBar('#Loading', 0, 'Cargando...');
+            var currentGameAnalisis = {};
+
+            try {
+
+                //primer ajax: buscamos el invocador.
+                var searchedSummoner = lolapicall(region, 'getSummonerDtoByName', [summonerName], forceGetCache).data;
+                addProgressToProgressBar('#Loading', 5, 'Buscando partida en curso...');
+
+                currentGameAnalisis.searchedSummoner = searchedSummoner;
+                //buscamos partida en curso
+                var currentGame = lolapicall(region, 'getCurrentGameInfoV3', [searchedSummoner.id], forceGetCache).data;
+                if (currentGame.gameType != 'MATCHED_GAME') {
+                    throw new Error('El tipo de partida no es ranked. ' + currentGame.gameType);
+                }
+                currentGameAnalisis.currentGame = currentGame;
+                addProgressToProgressBar('#Loading', 5, 'Ranked encontrada. Jugador 1 - buscando información del campeón...');
+
+                //buscamos la información de los invocadores de la partida en curso
+                var participants = currentGame.participants;
+                for (var i in participants) {
+
+                    var totalProgressBarPerParticipant = 85 / participants.length;
+                    var progressPerFunctionality = totalProgressBarPerParticipant / 6;
+
+                    var participant = participants[i];
+                    var participantSummonerId = participant.summonerId;
+                    if (participantSummonerId == searchedSummoner.id) {
+                        currentGameAnalisis.searchedSummoner.teamid = participant.teamId;
+                        currentGameAnalisis.currentGame.participants[i].searchedSummoner = true
+                    }
+
+                    var championId = participant.championId;
+                    var championInfo = lolapicall(region, 'getStaticChampionDto', [championId, 'image'], forceGetCache).data;
+                    currentGameAnalisis.currentGame.participants[i].championInfo = championInfo;
+                    addProgressToProgressBar('#Loading', progressPerFunctionality, 'Jugador ' + (parseInt(i) + 1) + ' - buscando matchlist con el campeon...');
+
+                    try {
+                        var participantRankedStats = lolapicall(region, 'getRankedStatsDto', [participantSummonerId], forceGetCache).data;
+                        currentGameAnalisis.currentGame.participants[i].rankedStats = participantRankedStats;
+                        addProgressToProgressBar('#Loading', progressPerFunctionality, 'Jugador ' + (parseInt(i) + 1) + ' - buscando matchlist con el campeon...');
+                    } catch (err) {
+                        console.log('Exeception in participants index ' + i + ': ' + err.message);
+                    }
+
+                    try {
+                        var participantMatchList = lolapicall(region, 'getMatchList', [participantSummonerId, 0, 10, null, null, championId], forceGetCache).data.matches;
+                        currentGameAnalisis.currentGame.participants[i].matchList = participantMatchList;
+                        addProgressToProgressBar('#Loading', progressPerFunctionality, 'Jugador ' + (parseInt(i) + 1) + ' - buscando matchdetail para el match 1...');
+
+                        var progresssPerMatch = progressPerFunctionality / participantMatchList.length;
+                        for (var j in participantMatchList) {
+                            var match = participantMatchList[j];
+                            try {
+                                var matchDetail = lolapicall(region, 'getMatchDetail', [match.matchId, false], forceGetCache).data;
+                                currentGameAnalisis.currentGame.participants[i].matchList[j].matchDetail = matchDetail;
+                                addProgressToProgressBar('#Loading', progresssPerMatch, j == participantMatchList.length - 1 ? 'Jugador ' + (parseInt(i) + 1) + ' - buscando lastmatchlist...' : 'Jugador ' + (parseInt(i) + 1) + ' - buscando matchdetail para el match ' + (parseInt(j) + 1) + '...');
+                            } catch (err) {
+                                console.log('Exception in participantMatchList for participant index ' + i + ' and match index ' + j + ': ' + err.message);
+                            }
+                        }
+                    } catch (err) {
+                        console.log('Execption in participants index ' + i + ': ' + err.message);
+                    }
+
+                    try {
+                        var participantLastMatchList = lolapicall(region, 'getMatchList', [participantSummonerId, 0, 10, null, null], forceGetCache).data.matches;
+                        currentGameAnalisis.currentGame.participants[i].lastMatchList = participantLastMatchList;
+                        addProgressToProgressBar('#Loading', progressPerFunctionality, 'Jugador ' + (parseInt(i) + 1) + ' - buscando matchdetail para el lastmatch 1...');
+
+                        var progresssPerLastMatch = progressPerFunctionality / participantLastMatchList.length;
+                        for (var j in participantLastMatchList) {
+                            var match = participantLastMatchList[j];
+                            try {
+                                var matchDetail = lolapicall(region, 'getMatchDetail', [match.matchId, false], forceGetCache).data;
+                                currentGameAnalisis.currentGame.participants[i].lastMatchList[j].matchDetail = matchDetail;
+                                addProgressToProgressBar('#Loading', progresssPerMatch, j == participantLastMatchList.length - 1 ? 'Analizando las estadísticas encontradas' : 'Jugador ' + (parseInt(i) + 1) + ' - buscando lastmatchdetail para el match ' + (parseInt(j) + 1) + '...');
+                            } catch (err) {
+                                console.log('Exception in participantLastMatchList for participant index ' + i + ' and match index ' + j + ': ' + err.message);
+                            }
+                        }
+                    } catch (err) {
+                        console.log('Execption in participants index ' + i + ': ' + err.message);
+                    }
+
+
+                }
+
+            } catch (err) {
+                $('.error-msg').append('<div class="alert alert-danger" role="alert">' + err.message + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span>  </button></div>')
+                $('#Loading').html('');
+            }
+
+            setProgressBar('#Loading', 95, 'Realizando analisis de datos y cargando vista.');
+
+            //realizando el analisis.
+            console.log(currentGameAnalisis);
+
+            $analysis = $('.analysis-result');
+
+            $analysis.html('');
+            var html = "";
+            html += '<div>Estadisticas de probabilidad de victoria:</div>';
+            html += '<table>';
+            html += '<thead>';
+            html += '<tr>';
+            html += '<th>Nombre</th>';
+            html += '<th>Campeon</th>';
+            html += '<th>RankedStats</th>';
+            html += '<th>ChampMatches</th>';
+            html += '<th>LastMatches</th>';
+            html += '<th>Total</th>';
+            html += '<th style="width:360px">Progreso</th>';
+            html += '</tr>';
+            html += '</thead>';
+            html += '<tbody>';
+
+            var participants = currentGameAnalisis.currentGame.participants;
+            var puntuacionPorEquipo = [];
+            puntuacionPorEquipo[100] = 0;
+            puntuacionPorEquipo[200] = 0;
+            for (var index in participants) {
+                var participant = participants[index];
+                var participantName = participant.summonerName;
+                var championImg = 'http://ddragon.leagueoflegends.com/cdn/{{champImgVersion}}/img/champion/' + participant.championInfo.image.full;
+
+                //calculamos puntuacion
+                var puntuacionRankedStats = 0;
+                var puntuacionChampMatches = 0;
+                var puntuacionLastMatches = 0;
+                var championsRankedStats = participant.rankedStats.champions;
+                var currentChampStats = null;
+                for (var c in championsRankedStats) {
+                    var champStats = championsRankedStats[c];
+                    if (champStats.id == participant.championId) {
+                        currentChampStats = champStats.stats;
+                        break;
+                    }
+                }
+                if (currentChampStats != null) {
+                    puntuacionRankedStats += currentChampStats.totalSessionsPlayed > 20 ? ((currentChampStats.totalSessionsWon * 100) / currentChampStats.totalSessionsPlayed) - 50 : (currentChampStats.totalSessionsLost > 0 ? (currentChampStats.totalSessionsWon / currentChampStats.totalSessionsLost) : currentChampStats.totalSessionsWon);
+                    puntuacionRankedStats += currentChampStats.totalDeathsPerSession > 0 ? (currentChampStats.totalChampionKills + currentChampStats.totalAssists) / currentChampStats.totalDeathsPerSession : currentChampStats.totalChampionKills;
+                }
+
+                var lastMatches = participant.lastMatchList;
+                var champMatches = participant.matchList;
+
+                for (var mindex in champMatches) {
+                    var match = champMatches[mindex];
+                    var matchPlayers = match.matchDetail.participantIdentities;
+                    var pid = null;
+                    for (var mpindex in matchPlayers) {
+                        var player = matchPlayers[mpindex];
+                        if (player.player.summonerId == participant.summonerId) {
+                            pid = player.participantId;
+                        }
+                    }
+                    if (pid != null) {
+                        var matchParticipantStats = match.matchDetail.participants[parseInt(pid) - 1].stats;
+                        puntuacionChampMatches += matchParticipantStats.deaths > 0 ? (matchParticipantStats.kills + matchParticipantStats.assists) / matchParticipantStats.deaths : matchParticipantStats.kills;
+                        puntuacionChampMatches += matchParticipantStats.winner == true ? 1 : -1;
+                    }
+                }
+
+                var lastMatchesResults = [];
+                for (var mindex in lastMatches) {
+                    var match = champMatches[mindex];
+                    var matchPlayers = match.matchDetail.participantIdentities;
+                    var pid = null;
+                    for (var mpindex in matchPlayers) {
+                        var player = matchPlayers[mpindex];
+                        if (player.player.summonerId == participant.summonerId) {
+                            pid = player.participantId;
+                        }
+                    }
+                    if (pid != null) {
+                        var matchParticipantStats = match.matchDetail.participants[parseInt(pid) - 1].stats;
+                        puntuacionLastMatches += matchParticipantStats.deaths > 0 ? (matchParticipantStats.kills + matchParticipantStats.assists) / matchParticipantStats.deaths : matchParticipantStats.kills;
+                        puntuacionLastMatches += matchParticipantStats.winner == true ? 1 : -1;
+                        lastMatchesResults.push(matchParticipantStats.winner == true ? 'W' : 'L')
+                    }
+                }
+
+
+                puntuacionPorEquipo[participant.teamId] += (puntuacionRankedStats+puntuacionChampMatches+puntuacionLastMatches);
+                html += '<tr bgcolor="' + (participant.teamId == 100 ? '#defbff' : '#ffdede') + '">';
+                html += '<td>' + participantName + '</td>';
+                html += '<td><img class="champion_square" src="' + championImg + '"></td>';
+                html += '<td>' + puntuacionRankedStats.toFixed(2) + '</td>';
+                html += '<td>' + puntuacionChampMatches.toFixed(2) + '</td>';
+                html += '<td>' + puntuacionLastMatches.toFixed(2) + '</td>';
+                html += '<td>' + (puntuacionRankedStats+puntuacionChampMatches+puntuacionLastMatches).toFixed(2) + '</td>';
+                html += '<td>';
+
+                for (var lmrindex in lastMatchesResults) {
+                    var result = lastMatchesResults[lmrindex];
+                    html += '<div class="gameresult '+result+'"></div>';
+                }
+
+                html += '</td>';
+                html += '</tr>';
+
+            }
+
+            html += '</tbody>';
+            html += '</table>';
+            $analysis.append(html);
+
+            $analysis.append('<br/>');
+            $analysis.append('<p>Puntuación Equipo <font color=blue>AZUL</font>: ' + (puntuacionPorEquipo[100]).toFixed(2) + '</p>');
+            $analysis.append('<p>Puntuación Equipo <font color=red>ROJO</font>: ' + (puntuacionPorEquipo[200]).toFixed(2) + '</p>');
+            $analysis.append('<p>Probablidad de victoria: ' + ((puntuacionPorEquipo[currentGameAnalisis.searchedSummoner.teamid] * 100) / (puntuacionPorEquipo[100] + puntuacionPorEquipo[200])).toFixed(2) + '%</p>');
+
+
+            setProgressBar('#Loading', 100, 'Finalizado');
+            $('#Loading').delay(2000).html('');
+        }
+
+        function setProgressBar(id, intProgress, msg) {
+            $(id + ' .progress-bar').attr('aria-valuenow', intProgress);
+            $(id + ' .progress-bar').css('width', intProgress + '%');
+            if (msg) {
+                $(id + ' p').html(msg + ' (' + intProgress.toFixed(2) + '%)');
+            }
+        }
+
+        function addProgressToProgressBar(id, intProgress, msg) {
+            var currentProgress = parseFloat($(id + ' .progress-bar').attr('aria-valuenow'));
+            setProgressBar(id, currentProgress + intProgress, msg);
+        }
+
+
+
+    </script>
+
+
+
+
+{% endblock %}

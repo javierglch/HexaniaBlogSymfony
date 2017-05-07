@@ -115,7 +115,7 @@ class RequestManager {
             // Peticion a cache
             if (($LolApiConfig->active_cache && $method == RequestManager::METHOD_GET) || $LolApiConfig->force_get_cache && $method != RequestManager::METHOD_GET) {
                 $debug_request_type = DebugInfo::DEBUG_REQUEST_TYPE_CACHE;
-                $data = $this->CacheManager->getData($cacheIndex, $maxTimeElapsed, $LolApiConfig->flag_force_get_cache);
+                $data = $this->CacheManager->getData($cacheIndex, $maxTimeElapsed, $LolApiConfig->force_get_cache);
             }
 
             // Peticion a URL

@@ -1,0 +1,14 @@
+/* 
+    Created on : 05-may-2017, 18:42:07
+    Author     : Javier
+*/
+
+/* placehodler */
+.form-control::-webkit-input-placeholder { color:#BCBCBC; }
+.form-control::-moz-placeholder { color:#BCBCBC; } /* firefox 19+ */
+.form-control:-ms-input-placeholder { color:#BCBCBC; } /* ie */
+.form-control:-moz-placeholder { color:#BCBCBC; }
+
+.progress-bar{
+    transition:ease 0.2s width;
+}

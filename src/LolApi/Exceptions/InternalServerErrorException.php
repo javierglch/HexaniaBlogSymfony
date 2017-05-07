@@ -8,5 +8,5 @@
 
 namespace LolApi\Exceptions;
 
-class InternalServerErrorException extends \Exception{
+class InternalServerErrorException extends LolApiGeneralException{
 }

@@ -9,5 +9,5 @@
 
 namespace LolApi\Exceptions;
 
-class ServiceTemporarilyOverloadedException extends \Exception{
+class ServiceTemporarilyOverloadedException extends LolApiGeneralException{
 }

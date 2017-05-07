@@ -57,6 +57,12 @@ class ChampionMasteryDTO {
      */
     public $playerId;
 
+    /**
+     * (no description)
+     * @var int 
+     */
+    public $tokensEarned;
+    
     public function __construct($data) {
         foreach (get_object_vars($data) as $key => $value) {
             $this->$key = $value;

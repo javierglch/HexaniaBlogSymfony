@@ -94,6 +94,7 @@ class LolApi {
         return [
             "api_key" => $this->LolApiConfig->api_key_development, //cambiar segun environment
             "{region}" => $this->LolApiConfig->region,
+            "{platformId}" => strtolower($this->LolApiConfig->getPlatformId($this->LolApiConfig->region))
         ];
     }
 
@@ -154,6 +155,7 @@ class LolApi {
      * @throws Exceptions\RateLimitExceededException
      * @throws Exceptions\InternalServerErrorException
      * @throws Exceptions\ServiceUnavailableException
+     * @deprecated 24/07/2017 use getChampionListDtoV3
      */
     public function getChampionListDto($boolFreeToPlay = null) {
         $aParams = $this->defaultParams();
@@ -161,6 +163,25 @@ class LolApi {
             $aParams["freeToPlay"] = $boolFreeToPlay ? 'true' : 'false';
         }
         $data = $this->doRequest(URLs::R_URL_CHAMPION, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
+        return new ChampionListDto($data);
+    }
+    
+    /**
+     * 
+     * @param boolean $boolFreeToPlay Optional filter param to retrieve only free to play champions.
+     * @return ChampionListDto
+     * @throws Exceptions\BadRequestException
+     * @throws Exceptions\UnauthorizedException
+     * @throws Exceptions\RateLimitExceededException
+     * @throws Exceptions\InternalServerErrorException
+     * @throws Exceptions\ServiceUnavailableException
+     */
+    public function getChampionListDtoV3($boolFreeToPlay = null) {
+        $aParams = $this->defaultParams();
+        if ($boolFreeToPlay !== null) {
+            $aParams["freeToPlay"] = $boolFreeToPlay ? 'true' : 'false';
+        }
+        $data = $this->doRequest(URLs::R_URL_CHAMPION_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
         return new ChampionListDto($data);
     }
 
@@ -173,11 +194,29 @@ class LolApi {
      * @throws Exceptions\RateLimitExceededException
      * @throws Exceptions\InternalServerErrorException
      * @throws Exceptions\ServiceUnavailableException
+     * @deprecated 24/07/2017 use getChampionDtoV3
      */
     public function getChampionDto($id) {
         $aParams = $this->defaultParams();
         $aParams["{id}"] = $id;
         $data = $this->doRequest(URLs::R_URL_CHAMPION_ID, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
+        return new ChampionDto($data);
+    }
+    
+    /**
+     * 
+     * @param int $id ID of the champion to retrieve.
+     * @return ChampionDto
+     * @throws Exceptions\BadRequestException
+     * @throws Exceptions\UnauthorizedException
+     * @throws Exceptions\RateLimitExceededException
+     * @throws Exceptions\InternalServerErrorException
+     * @throws Exceptions\ServiceUnavailableException
+     */
+    public function getChampionDtoV3($id) {
+        $aParams = $this->defaultParams();
+        $aParams["{id}"] = $id;
+        $data = $this->doRequest(URLs::R_URL_CHAMPION_ID_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
         return new ChampionDto($data);
     }
 
@@ -189,13 +228,30 @@ class LolApi {
      * @return ChampionMasteryDTO
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\InternalServerErrorException
+     * @deprecated 24/07/2017 use getChampionMasteryDTOV3
      */
     public function getChampionMasteryDTO($playerId, $championId) {
         $aParams = $this->defaultParams();
         $aParams['{playerId}'] = $playerId;
         $aParams['{championId}'] = $championId;
-        $aParams['{platformId}'] = $this->LolApiConfig->getPlatformId($this->LolApiConfig->region);
         $data = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_CHAMP_ID, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
+        return new ChampionMasteryDTO($data);
+    }
+    
+    /**
+     * Get a champion mastery by player id and champion id. Response code 204 means
+     * there were no masteries found for given player id or player id and champion id combination. (RPC)
+     * @param long $summonerId Summoner ID associated with the player
+     * @param long $championId Champion ID to retrieve Champion Mastery for
+     * @return ChampionMasteryDTO
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\InternalServerErrorException
+     */
+    public function getChampionMasteryDTOV3($summonerId, $championId) {
+        $aParams = $this->defaultParams();
+        $aParams['{summonerId}'] = $summonerId;
+        $aParams['{championId}'] = $championId;
+        $data = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_CHAMP_ID_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
         return new ChampionMasteryDTO($data);
     }
 
@@ -206,12 +262,31 @@ class LolApi {
      * @return ChampionMasteryDTO array
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\InternalServerErrorException
+     * @deprecated 24/07/2017 use getChampionMasteryDTOListV3
      */
     public function getChampionMasteryDTOList($playerId) {
         $aParams = $this->defaultParams();
         $aParams['{playerId}'] = $playerId;
-        $aParams['{platformId}'] = $this->LolApiConfig->getPlatformId($this->LolApiConfig->region);
         $datas = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_LIST, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
+        $aResult = [];
+        foreach ($datas as $data) {
+            $aResult[] = new ChampionMasteryDTO($data);
+        }
+        return $aResult;
+    }
+    
+    /**
+     * Get a champion mastery by player id and champion id. Response code 204 means
+     * there were no masteries found for given player id or player id and champion id combination. (RPC)
+     * @param long $summonerid Summoner ID associated with the player
+     * @return ChampionMasteryDTO array
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\InternalServerErrorException
+     */
+    public function getChampionMasteryDTOListV3($summonerid) {
+        $aParams = $this->defaultParams();
+        $aParams['{summonerId}'] = $summonerid;
+        $datas = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_LIST_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
         $aResult = [];
         foreach ($datas as $data) {
             $aResult[] = new ChampionMasteryDTO($data);
@@ -223,12 +298,24 @@ class LolApi {
      * Get Total score of Champion Mastery
      * @param long $playerId
      * @return int
+     * @deprecated 24/07/2017 use getChampionMasteryScoreV3
      */
     public function getChampionMasteryScore($playerId) {
         $aParams = $this->defaultParams();
         $aParams['{playerId}'] = $playerId;
-        $aParams['{platformId}'] = $this->LolApiConfig->getPlatformId($this->LolApiConfig->region);
         $data = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_SCORE, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
+        return $data;
+    }
+    
+    /**
+     * Get Total score of Champion Mastery
+     * @param long $summonerId Summoner ID associated with the player
+     * @return int
+     */
+    public function getChampionMasteryScoreV3($summonerId) {
+        $aParams = $this->defaultParams();
+        $aParams['{summonerId}'] = $summonerId;
+        $data = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_SCORE_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
         return $data;
     }
 
@@ -244,7 +331,6 @@ class LolApi {
     public function getChampionMasteryTopChampions($playerId, $count = null) {
         $aParams = $this->defaultParams();
         $aParams['{playerId}'] = $playerId;
-        $aParams['{platformId}'] = $this->LolApiConfig->getPlatformId($this->LolApiConfig->region);
         $aParams['count'] = $count ? $count : 3;
         $datas = $this->doRequest(URLs::R_URL_CHAMPION_MASTERY_TOP, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_B);
         $aResult = [];
@@ -260,12 +346,26 @@ class LolApi {
      * @return CurrentGameInfo
      * @throws Exceptions\ForbiddenException
      * @throws Exceptions\RateLimitExceededException
+     * @deprecated 24/07/2017 use getCurrentGameInfoV3
      */
     public function getCurrentGameInfo($summonerId) {
         $aParams = $this->defaultParams();
         $aParams['{summonerId}'] = $summonerId;
-        $aParams['{platformId}'] = $this->LolApiConfig->getPlatformId($this->LolApiConfig->region);
         $data = $this->doRequest(URLs::R_URL_CURRENT_GAME, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_A);
+        return new CurrentGameInfo($data);
+    }
+    
+    /**
+     * Get current game information for the given summoner ID.
+     * @param long $summonerId The ID of the summoner.
+     * @return CurrentGameInfo
+     * @throws Exceptions\ForbiddenException
+     * @throws Exceptions\RateLimitExceededException
+     */
+    public function getCurrentGameInfoV3($summonerId) {
+        $aParams = $this->defaultParams();
+        $aParams['{summonerId}'] = $summonerId;
+        $data = $this->doRequest(URLs::R_URL_CURRENT_GAME_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_A);
         return new CurrentGameInfo($data);
     }
 
@@ -274,11 +374,23 @@ class LolApi {
      * @return Classes\FeaturedGames\FeaturedGames
      * @throws Exceptions\ForbiddenException
      * @throws Exceptions\RateLimitExceededException
+     * @deprecated 24/07/2017 use getCurrentGameInfoV3
      */
     public function getFeaturedGames() {
         $aParams = $this->defaultParams();
-
         $data = $this->doRequest(URLs::R_URL_FEATURED_GAMES, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_A2);
+        return new FeaturedGames($data);
+    }
+
+    /**
+     * Recupera los featured games
+     * @return Classes\FeaturedGames\FeaturedGames
+     * @throws Exceptions\ForbiddenException
+     * @throws Exceptions\RateLimitExceededException
+     */
+    public function getFeaturedGamesV3() {
+        $aParams = $this->defaultParams();
+        $data = $this->doRequest(URLs::R_URL_FEATURED_GAMES_v3, $aParams, __FUNCTION__, CacheManager::TIME_ELAPSED_A2);
         return new FeaturedGames($data);
     }
 
@@ -292,6 +404,7 @@ class LolApi {
      * @throws Exceptions\RateLimitExceededException
      * @throws Exceptions\InternalServerErrorException
      * @throws Exceptions\ServiceUnavailableException
+     * @deprecated 24/07/2017 use getRecentGamesDtoV3
      */
     public function getRecentGamesDto($summonerId) {
         $aParams = $this->defaultParams();
