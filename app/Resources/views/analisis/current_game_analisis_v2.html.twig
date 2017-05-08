@@ -314,7 +314,9 @@
 
 
             setProgressBar('#Loading', 100, 'Finalizado');
-            $('#Loading').delay(2000).html('');
+            $('#Loading').html('');
+            
+            posFooter();
         }
 
         function setProgressBar(id, intProgress, msg) {
