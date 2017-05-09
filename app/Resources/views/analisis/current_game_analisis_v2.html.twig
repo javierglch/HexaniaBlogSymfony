@@ -8,8 +8,10 @@
             <form id="SearchSummonerForm" class="form form-inline mx-auto" action="{{path('current_game_analisis_index')}}" method="GET">
                 <select name="region" class="form-control  mb-2 mr-sm-2 mb-sm-0">
                     <option value="euw" selected="selected">EUW</option>
+                    <option value="lan" selected="selected">LAN</option>
+                    <option value="las" selected="selected">LAS</option>
                 </select>
-                <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" name="summoner_name" placeholder="Summoner name..." value="{{invocador_buscado?invocador_buscado}}">
+                <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" name="summoner_name" placeholder="Summoner name..." value="">
 
                 <div class="form-check mb-2 mr-sm-2 mb-sm-0">
                     <label class="form-check-label">
@@ -195,7 +197,6 @@
             setProgressBar('#Loading', 95, 'Realizando analisis de datos y cargando vista.');
 
             //realizando el analisis.
-            console.log(currentGameAnalisis);
 
             $analysis = $('.analysis-result');
 

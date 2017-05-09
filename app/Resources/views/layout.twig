@@ -34,7 +34,7 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                {% trans %}Analisis{% endtrans %}
+                                <i class="fa fa-star"></i>&nbsp;{% trans %}Analisis{% endtrans %}
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                                 <a class="dropdown-item" href="{{path('current_game_analisis_index')}}">{% trans %}Current Game{% endtrans %}</a>
@@ -42,6 +42,9 @@
                                 <a class="dropdown-item" href="#">{% trans %}Match List{% endtrans %}</a>
                                 <a class="dropdown-item" href="#">{% trans %}DuoQ Performance{% endtrans %}</a>
                             </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{path('blog_index')}}"><i class="fa fa-rss"></i>&nbsp;{% trans %}Blog{% endtrans %}</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav mx-auto hidden-md-down">

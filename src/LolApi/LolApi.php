@@ -24,6 +24,7 @@ use LolApi\Classes\LolStaticData\RuneListDto;
 use LolApi\Classes\LolStaticData\RuneDto;
 use LolApi\Classes\LolStaticData\SummonerSpellListDto;
 use LolApi\Classes\LolStaticData\SummonerSpellDto;
+use LolApi\Classes\LolStatus\Shard;
 use LolApi\Classes\LolStatus\ShardStatus;
 use LolApi\Classes\Match\MatchDetail;
 use LolApi\Classes\MatchList\MatchList;
@@ -881,7 +882,7 @@ class LolApi {
         foreach ($datas as $o) {
             $aResult[] = new Shard($o);
         }
-        return $data;
+        return $datas;
     }
 
     /**

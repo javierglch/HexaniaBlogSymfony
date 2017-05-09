@@ -25,7 +25,7 @@ class AnalisisController extends Controller {
      * @Route("current-game-v2", name="current_game_analisis_index_v2")
      */
     public function currentGameAnalisisV2(Request $request){
-        return $this->render('analisis/current_game_analisis_v2.html.twig', ['champImgVersion'=>\LolApi\LolApi::globalApi()->getRealmDto()->v]);
+        return $this->render('analisis/current_game_analisis_v2.html.twig', ['champImgVersion'=>@\LolApi\LolApi::globalApi()->getRealmDto()->v]);
     }
     
     /**
