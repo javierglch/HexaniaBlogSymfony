@@ -1,15 +1,17 @@
 {% extends "layout.twig" %}
 
+{% block title %}Current Game Analysis | {% endblock %}
+
 {% block main_content %}
 
     <div class="container">
         <div class="card card-block">
             <h4 class="card-title">{%trans%}Current Game Analysis{%endtrans%}</h4>
-            <form id="SearchSummonerForm" class="form form-inline mx-auto" action="{{path('current_game_analisis_index')}}" method="GET">
+            <form id="SearchSummonerForm" class="form form-inline mx-auto">
                 <select name="region" class="form-control  mb-2 mr-sm-2 mb-sm-0">
                     <option value="euw" selected="selected">EUW</option>
-                    <option value="lan" selected="selected">LAN</option>
-                    <option value="las" selected="selected">LAS</option>
+                    <option value="lan">LAN</option>
+                    <option value="las">LAS</option>
                 </select>
                 <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" name="summoner_name" placeholder="Summoner name..." value="">
 
@@ -49,47 +51,6 @@
                 return false;
             });
         });
-
-
-        /**
-         * 
-         * @param {string} region
-         * @param {string} method
-         * @param {array} methodParams
-         * @param {boolean} force_get_cache
-         * @returns {json}
-         */
-        function lolapicall(region, method, methodParams, force_get_cache) {
-            var response = {};
-            $.ajax({
-                url: '/lolapi/',
-                data: {
-                    method: method,
-                    region: region,
-                    methodParams: methodParams,
-                    force_get_cache: force_get_cache?1:0
-                },
-                dataType: 'json',
-                async: false, //peticion sincronica,
-                success: function (data, textStatus, jqXHR) {
-                    response = data;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    response = jqXHR.responseJSON;
-                },
-                crossDomain: true,
-                timeout: 0,
-                method: 'POST'
-            });
-
-            if (response.exception) {
-                throw new Error(method + ' - ' + response.exception.message);
-            }
-
-            return response;
-        }
-
-
 
 
         function startAnalisis() {
@@ -284,19 +245,19 @@
                 }
 
 
-                puntuacionPorEquipo[participant.teamId] += (puntuacionRankedStats+puntuacionChampMatches+puntuacionLastMatches);
+                puntuacionPorEquipo[participant.teamId] += (puntuacionRankedStats + puntuacionChampMatches + puntuacionLastMatches);
                 html += '<tr bgcolor="' + (participant.teamId == 100 ? '#defbff' : '#ffdede') + '">';
                 html += '<td>' + participantName + '</td>';
                 html += '<td><img class="champion_square" src="' + championImg + '"></td>';
                 html += '<td>' + puntuacionRankedStats.toFixed(2) + '</td>';
                 html += '<td>' + puntuacionChampMatches.toFixed(2) + '</td>';
                 html += '<td>' + puntuacionLastMatches.toFixed(2) + '</td>';
-                html += '<td>' + (puntuacionRankedStats+puntuacionChampMatches+puntuacionLastMatches).toFixed(2) + '</td>';
+                html += '<td>' + (puntuacionRankedStats + puntuacionChampMatches + puntuacionLastMatches).toFixed(2) + '</td>';
                 html += '<td>';
 
                 for (var lmrindex in lastMatchesResults) {
                     var result = lastMatchesResults[lmrindex];
-                    html += '<div class="gameresult '+result+'"></div>';
+                    html += '<div class="gameresult ' + result + '"></div>';
                 }
 
                 html += '</td>';
@@ -316,7 +277,7 @@
 
             setProgressBar('#Loading', 100, 'Finalizado');
             $('#Loading').html('');
-            
+
             posFooter();
         }
 

@@ -1,0 +1,212 @@
+{% extends "layout.twig" %}
+
+{% block title %}Match List Analysis | {% endblock %}
+
+{% block main_content %}
+
+    <div class="container">
+        <div class="card card-block">
+            <h4 class="card-title">{%trans%}Match List Analysis{%endtrans%}</h4>
+            <form id="SearchSummonerForm" class="form mx-auto">
+                <fieldset class="form-group row form-inline">
+                    <select name="region" class="form-control  mb-2 mr-sm-2 mb-sm-0">
+                        <option value="euw" selected="selected">EUW</option>
+                        <option value="lan">LAN</option>
+                        <option value="las">LAS</option>
+                    </select>
+                    <input type="text" class="form-control mb-2 mr-sm-2 mb-sm-0" name="summoner_name" placeholder="Summoner name..." value="">
+                    <div class="form-check mb-2 mr-sm-2 mb-sm-0">
+                        <label class="form-check-label">
+                            <input class="form-check-input" name="force_get_cache" type="checkbox" value="1"> Force get cache
+                        </label>
+                    </div>
+                </fieldset>
+                <fieldset class="form-group row form-inline">
+                    Fecha inicial <input type="text" placeholder="dd-mm-yyy" class="datepicker form-control ml-2 mb-2 mr-sm-2 mb-sm-0" name="start_date">
+                    Fecha final <input type="text" placeholder="dd-mm-yyyy" class="datepicker form-control ml-2 mb-2 mb-sm-0" name="end_date">
+                </fieldset>
+                <button type="submit" class="btn btn-primary pull-right">Submit</button>
+            </form>
+            <div class="form-msgs"></div>
+            <div class="progress-msg" id="Loading"></div>
+            <div class="analysis-result"></div>
+        </div>
+    </div>
+    <style type="text/css">
+        .champion_square{
+            height:35px;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/ju-1.11.4/jqc-1.11.3,dt-1.10.8/datatables.min.css">
+    <script type="text/javascript" src="https://cdn.datatables.net/r/ju-1.11.4/jqc-1.11.3,dt-1.10.8/datatables.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#SearchSummonerForm').on('submit', function (e) {
+                e.preventDefault();
+                startAnalisis();
+                return false;
+            });
+
+            $('input.datepicker').datepicker({
+                dateFormat: "dd-mm-yy",
+                firstDay: 1,
+                maxDate: "+1d"
+            });
+        });
+
+
+
+        function startAnalisis() {
+
+            $('.progress-msg').html('<p></p><div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>')
+
+            var summonerName = $('#SearchSummonerForm input[name="summoner_name"]').val();
+            var region = $('#SearchSummonerForm select[name="region"]').val();
+            var forceGetCache = $('#SearchSummonerForm input[name="force_get_cache"]').prop('checked');
+
+            var startDate = $('#SearchSummonerForm input[name="start_date"]').val();
+            var endDate = $('#SearchSummonerForm input[name="end_date"]').val();
+
+            //inicializaciones
+            setProgressBar('#Loading', 0, 'Buscando invocador...');
+            var data = {};
+
+            try {
+
+                //primer ajax: buscamos el invocador.
+                var searchedSummoner = lolapicall(region, 'getSummonerDtoByName', [summonerName], forceGetCache).data;
+                addProgressToProgressBar('#Loading', 20, 'Buscando match list...');
+
+                data.searchedSummoner = searchedSummoner;
+                //buscamos partida en curso
+                var matchlist = lolapicall(region, 'getMatchList', [searchedSummoner.id, null, null, convertDateToTimestamp(startDate), convertDateToTimestamp(endDate)], forceGetCache).data;
+                data.matchlist = matchlist;
+
+                var totalProgressMatchesDetailLoad = 40;
+                var progressPerMatchDetail = totalProgressMatchesDetailLoad / data.matchlist.matches.length
+
+                addProgressToProgressBar('#Loading', progressPerMatchDetail, 'Se han encontrado ' + data.matchlist.matches.length + ' matches. Recuperando match detail de cada uno (1/' + data.matchlist.matches.length + ').');
+                for (var matchindex in data.matchlist.matches) {
+                    var match = data.matchlist.matches[matchindex];
+                    var matchdetail = lolapicall(region, 'getMatchDetail', [match.matchId, false], forceGetCache).data;
+                    data.matchlist.matches[matchindex].matchdetail = matchdetail;
+                    addProgressToProgressBar('#Loading', progressPerMatchDetail, 'Se han encontrado ' + data.matchlist.matches.length + ' matches. Recuperando match detail de cada uno (' + (parseInt(matchindex) + 2) + '/' + data.matchlist.matches.length + ').');
+                }
+
+            } catch (err) {
+                $('.form-msgs').append('<div class="alert alert-danger" role="alert">' + err.message + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>')
+                $('#Loading').html('');
+            }
+
+            //realizando el analisis.
+            addProgressToProgressBar('#Loading', 1, 'Realizando análisis de datos.');
+
+            var analysis = [];
+            var totals = {wins: 0, loses: 0}
+            var totalProgressAnalysis = 29;
+            var progressPerParticipantAnalysis = totalProgressAnalysis / (data.matchlist.matches.length * 10)
+
+            for (var matchindex in data.matchlist.matches) {
+                var match = data.matchlist.matches[matchindex];
+                for (var participantindex in match.matchdetail.participants) {
+                    var participant = match.matchdetail.participants[participantindex];
+
+                    var champid = participant.championId;
+                    var win = participant.stats.winner;
+
+                    if (analysis[champid] == null) {
+                        analysis[champid] = {};
+                        analysis[champid].wins = 0;
+                        analysis[champid].loses = 0;
+                        analysis[champid].yours = 0;
+
+                        var championInfo = lolapicall(region, 'getStaticChampionDto', [champid, 'image'], forceGetCache).data;
+                        analysis[champid].lolinfo = championInfo;
+
+                    }
+
+                    analysis[champid].wins += win ? 1 : 0;
+                    analysis[champid].loses += win ? 0 : 1;
+
+                    if (data.searchedSummoner.id == match.matchdetail.participantIdentities[participantindex].player.summonerId) {
+                        analysis[champid].yours += 1;
+                    }
+
+                    totals.wins += win ? 1 : 0;
+                    totals.loses += win ? 0 : 1;
+                    addProgressToProgressBar('#Loading', progressPerParticipantAnalysis, 'Realizando análisis de datos. Match ' + (parseInt(matchindex) + 1) + '/' + data.matchlist.matches.length + ', participant ' + (parseInt(participantindex) + 1) + '/10');
+                }
+
+            }
+            console.log(data);
+            console.log(analysis);
+
+            addProgressToProgressBar('#Loading', 5, 'Creando visualización de los datos.');
+
+            var strAnalysis = "";
+
+            strAnalysis += "<table class='datatable'>";
+            strAnalysis += "<thead>";
+            strAnalysis += "<tr><th>Champion</th><th>TotalMatches</th><th>WinRate</th><th>WinRate Bar</th><th>Puntuación</th></tr>";
+            strAnalysis += "</thead>";
+            strAnalysis += "<tbody>";
+            for (var champId in analysis) {
+
+                var champInfo = analysis[champId];
+                var championImg = 'http://ddragon.leagueoflegends.com/cdn/{{champImgVersion}}/img/champion/' + champInfo.lolinfo.image.full;
+                var totalMatches = champInfo.wins + champInfo.loses;
+                var champWinRate = ((champInfo.wins * 100) / totalMatches).toFixed(2);
+                var gamesYours = champInfo.yours;
+                strAnalysis += '<tr>';
+                strAnalysis += '<td><img class="champion_square" src="' + championImg + '"></td>';
+                strAnalysis += '<td>' + totalMatches + (gamesYours>0?' (yours: '+gamesYours+')':'')+'</td>';
+                strAnalysis += '<td>' + champWinRate + '%</td>';
+                strAnalysis += '<td><div class="progress"><div class="progress-bar bg-success" role="progressbar" aria-valuenow="' + champWinRate + '" aria-valuemin="0" aria-valuemax="100" style="width:' + champWinRate + '%"></div></div></td>';
+                strAnalysis += '<td>' + ((champInfo.wins * 100) / totals.wins).toFixed(2) + '</td>';
+                strAnalysis += "</tr>";
+
+            }
+            strAnalysis += "</tbody>";
+            strAnalysis += "</table>";
+
+            $('.analysis-result').html(strAnalysis);
+            $('.datatable').dataTable();
+            setProgressBar('#Loading', 100, 'Finalizado');
+            $('#Loading').html('');
+            posFooter();
+        }
+
+        function setProgressBar(id, intProgress, msg) {
+            $(id + ' .progress-bar').attr('aria-valuenow', intProgress);
+            $(id + ' .progress-bar').css('width', intProgress + '%');
+            if (msg) {
+                $(id + ' p').html(msg + ' (' + intProgress.toFixed(2) + '%)');
+            }
+        }
+
+        function addProgressToProgressBar(id, intProgress, msg) {
+            var currentProgress = parseFloat($(id + ' .progress-bar').attr('aria-valuenow'));
+            setProgressBar(id, currentProgress + intProgress, msg);
+        }
+
+        /**
+         * 
+         * @param {string} strDate dd-mm-yyy
+         * @returns {Date}
+         */
+        function convertDateToTimestamp(strDate) {
+            var dateString = strDate,
+                    dateTimeParts = dateString.split(' '),
+                    dateParts = dateTimeParts[0].split('-'),
+                    date;
+
+            date = new Date(dateParts[2], parseInt(dateParts[1], 10) - 1, dateParts[0]);
+            return date.getTime();
+        }
+
+    </script>
+
+
+
+
+{% endblock %}
