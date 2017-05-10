@@ -32,7 +32,8 @@ class AnalysisController extends Controller {
      * @Route("match-list", name="match_list_analysis")
      */
     public function matchListAnalysisAction(Request $request){
-        return $this->render('analisis/match_list_analysis.html.twig', ['champImgVersion'=>@\LolApi\LolApi::globalApi()->getRealmDto()->v]);
+        //minWins -> numero de partidas minimas ganadas para tener en cuenta el campeon a la hora de inlcuirlo en la estadistica
+        return $this->render('analisis/match_list_analysis.html.twig', ['minWins'=>5,'champImgVersion'=>@\LolApi\LolApi::globalApi()->getRealmDto()->v]);
     }
    
 }

@@ -2,7 +2,6 @@ $(document).ready(function () {
 
 });
 
-
 /**
  * 
  * @param {string} region
