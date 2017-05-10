@@ -33,7 +33,7 @@ class AnalysisController extends Controller {
      */
     public function matchListAnalysisAction(Request $request){
         //minWins -> numero de partidas minimas ganadas para tener en cuenta el campeon a la hora de inlcuirlo en la estadistica
-        return $this->render('analisis/match_list_analysis.html.twig', ['minWins'=>5,'champImgVersion'=>@\LolApi\LolApi::globalApi()->getRealmDto()->v]);
+        return $this->render('analisis/match_list_analysis.html.twig', ['minTotalMatches'=>5,'champImgVersion'=>@\LolApi\LolApi::globalApi()->getRealmDto()->v]);
     }
    
 }

@@ -102,8 +102,8 @@
                 //primer ajax: buscamos el invocador.
                 var searchedSummoner = lolapicall(region, 'getSummonerDtoByName', [summonerName], forceGetCache).data;
                 addProgressToProgressBar('#Loading', 20, 'Buscando match list...');
-
                 data.searchedSummoner = searchedSummoner;
+
                 //buscamos partida en curso
                 var matchlist = lolapicall(region, 'getMatchList', [searchedSummoner.id, null, null, convertDateToTimestamp(startDate), convertDateToTimestamp(endDate)], forceGetCache).data;
                 data.matchlist = matchlist;
@@ -133,6 +133,15 @@
 
                 for (var matchindex in data.matchlist.matches) {
                     var match = data.matchlist.matches[matchindex];
+
+                    var yoursParticipant = null;
+                    for (var participantindex in match.matchdetail.participants) {
+                        if (data.searchedSummoner.id == match.matchdetail.participantIdentities[participantindex].player.summonerId) {
+                            yoursParticipant = match.matchdetail.participants[participantindex];
+                            break;
+                        }
+                    }
+
                     for (var participantindex in match.matchdetail.participants) {
                         var participant = match.matchdetail.participants[participantindex];
 
@@ -146,6 +155,12 @@
                             analysis[champId].loses = 0;
                             analysis[champId].yours = 0;
                             analysis[champId].totalMatches = 0;
+                            analysis[champId].onYourTeam = 0;
+                            analysis[champId].onYourTeamAndWin = 0;
+                            analysis[champId].onYourTeamAndLose = 0;
+                            analysis[champId].onEnemyTeam = 0;
+                            analysis[champId].onEnemyTeamAndWin = 0;
+                            analysis[champId].onEnemyTeamAndLose = 0;
                         }
 
                         analysis[champId].wins += win ? 1 : 0;
@@ -153,8 +168,18 @@
                         analysis[champId].totalMatches++;
                         analysis[champId].winRate = analysis[champId].wins / analysis[champId].totalMatches; //se reescribe cada vez así no se necesita calcularla
 
-                        if (data.searchedSummoner.id == match.matchdetail.participantIdentities[participantindex].player.summonerId) {
+                        if (participant.participantId == yoursParticipant.participantId) {
                             analysis[champId].yours += 1;
+                        }
+
+                        if (yoursParticipant.teamId == participant.teamId) {
+                            analysis[champId].onYourTeam++;
+                            analysis[champId].onYourTeamAndWin += win ? 1 : 0;
+                            analysis[champId].onYourTeamAndLose += win ? 0 : 1;
+                        } else {
+                            analysis[champId].onEnemyTeam++;
+                            analysis[champId].onEnemyTeamAndWin += win ? 1 : 0;
+                            analysis[champId].onEnemyTeamAndLose += win ? 0 : 1;
                         }
 
                         totals.wins += win ? 1 : 0;
@@ -171,7 +196,7 @@
                 var maxRelativeWinRate = 0;
                 for (var champId in analysis) {
                     var champInfo = analysis[champId];
-                    if (champInfo.wins > {{minWins}}) {
+                    if (champInfo.totalMatches > {{minTotalMatches}}) {
                         champInfo.id = champId;
                         champInfo.relativeWinRate = champInfo.winRate * totals.matches + champInfo.wins;
                         var championInfo = lolapicall(region, 'getStaticChampionDto', [champId, 'image'], forceGetCache).data;
@@ -196,8 +221,8 @@
                     return b.relativeWinRate - a.relativeWinRate;
                 });
 
-                console.log(analysisFinal);
                 console.log(data);
+                console.log(analysisFinal);
 
                 addProgressToProgressBar('#Loading', 5, 'Creando visualización de los datos.');
 
@@ -205,7 +230,7 @@
 
                 strAnalysis += "<table class='datatable'>";
                 strAnalysis += "<thead>";
-                strAnalysis += "<tr><th>Champion</th><th>TotalMatches</th><th>WinRate</th><th>Win Ratio Relativo</th></tr>";
+                strAnalysis += "<tr><th>Champion</th><th>TotalMatches</th><th>WinRate</th><th>onYourTeam</th><th>onYourTeam Win%</th><th>onEnemyTeam</th><th>onEnemyTeam Win%</th><th>Win Ratio Relativo</th></tr>";
                 strAnalysis += "</thead>";
                 strAnalysis += "<tbody>";
                 for (var champId in analysisFinal) {
@@ -215,6 +240,10 @@
                     strAnalysis += '<td><img class="champion_square" src="' + champInfo.imgsrc + '"></td>';
                     strAnalysis += '<td>' + champInfo.totalMatches + (champInfo.yours > 0 ? ' (yours: ' + champInfo.yours + ')' : '') + '</td>';
                     strAnalysis += '<td>' + (champInfo.winRate * 100).toFixed(2) + '%</td>';
+                    strAnalysis += '<td>' + champInfo.onYourTeam + ' (' + champInfo.onYourTeamAndWin + 'W/' + champInfo.onYourTeamAndLose + 'L)</td>';
+                    strAnalysis += '<td>' + ((champInfo.onYourTeamAndWin * 100) / champInfo.onYourTeam).toFixed(2) + '%</td>';
+                    strAnalysis += '<td>' + champInfo.onEnemyTeam + ' (' + champInfo.onEnemyTeamAndWin + 'W/' + champInfo.onEnemyTeamAndLose + 'L)</td>';
+                    strAnalysis += '<td>' + ((champInfo.onEnemyTeamAndWin * 100) / champInfo.onEnemyTeam).toFixed(2) + '%</td>';
                     strAnalysis += '<td>' + relativeWinRatePer100.toFixed(2) + '%<div class="progress"><div class="progress-bar bg-success" role="progressbar" aria-valuenow="' + relativeWinRatePer100 + '" aria-valuemin="0" aria-valuemax="100" style="width:' + relativeWinRatePer100.toFixed(2) + '%"></div></div></td>';
                     strAnalysis += "</tr>";
                 }
