@@ -55,7 +55,7 @@ class StartController extends Controller {
         $request->getSession()->set('_locale', $locale);
         return $this->redirectToRoute($request->get('route_name'));
     }
-
+    
     /**
      * @Route("test")
      */
@@ -68,15 +68,6 @@ class StartController extends Controller {
         
         echo $r;
         die();
-    }
-
-}
-
-
-class A {
-
-    public function met($a, $b) {
-        return 'respuesta: '.$a.', '.$b;
     }
 
 }
