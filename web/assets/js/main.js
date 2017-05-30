@@ -1,6 +1,13 @@
 $(document).ready(function () {
-
+    $("#LoginLink").on('click',function(){
+        $('.login-box').toggleClass('show');
+    })
 });
+
+function tongleLoginBox(){
+    $('.login-box').addClass('show');
+}
+
 
 /**
  * 
